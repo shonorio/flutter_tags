@@ -10,9 +10,11 @@ ios/Flutter/Generated.xcconfig
 ios/Runner/GeneratedPluginRegistrant.*
 
 lib/generated/
-res/
+./res/
 .idea/
-android/
+./android/
 
 lib/selectable_tags_back.dart
 example/lib/main_back.dart
+
+pubspec.lock
