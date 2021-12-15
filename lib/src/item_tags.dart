@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_tags/src/tags.dart';
@@ -146,40 +147,41 @@ class _ItemTagsState extends State<ItemTags> {
 
   void _setDataList() {
     // Get List<DataList> from Tags widget
-    _dataListInherited = DataListInherited.of(context);
+    final dataListInherited = DataListInherited.of(context);
+    if (dataListInherited == null) return;
+
+    final list = dataListInherited.list;
+    _dataListInherited = dataListInherited;
 
     // set List length
-    if (_dataListInherited!.list!.length < _dataListInherited!.itemCount!)
-      _dataListInherited!.list!.length = _dataListInherited!.itemCount!;
+    if (list.length < dataListInherited.itemCount)
+      list.length = dataListInherited.itemCount;
 
-    if (_dataListInherited!.list!.length > (widget.index + 1) &&
-        _dataListInherited!.list!.elementAt(widget.index) != null &&
-        _dataListInherited!.list!.elementAt(widget.index).title !=
-            widget.title) {
+    if (list.length > (widget.index + 1) &&
+        list.elementAt(widget.index) != null &&
+        list.elementAt(widget.index)?.title != widget.title) {
       // when an element is removed from the data source
-      _dataListInherited!.list!.removeAt(widget.index);
+      list.removeAt(widget.index);
 
       // when all item list changed in data source
-      if (_dataListInherited!.list!.elementAt(widget.index) != null &&
-          _dataListInherited!.list!.elementAt(widget.index).title !=
-              widget.title)
-        _dataListInherited!.list!
-            .removeRange(widget.index, _dataListInherited!.list!.length);
+      if (list.elementAt(widget.index) != null &&
+          list.elementAt(widget.index)?.title != widget.title)
+        list.removeRange(widget.index, list.length);
     }
 
     // add new Item in the List
-    if (_dataListInherited!.list!.length < (widget.index + 1)) {
+    if (list.length < (widget.index + 1)) {
       //print("add");
-      _dataListInherited!.list!.insert(
+      list.insert(
           widget.index,
           DataList(
               title: widget.title,
               index: widget.index,
               active: widget.singleItem ? false : widget.active,
               customData: widget.customData));
-    } else if (_dataListInherited!.list!.elementAt(widget.index) == null) {
+    } else if (list.elementAt(widget.index) == null) {
       //print("replace");
-      _dataListInherited!.list![widget.index] = DataList(
+      list[widget.index] = DataList(
           title: widget.title,
           index: widget.index,
           active: widget.singleItem ? false : widget.active,
@@ -187,17 +189,16 @@ class _ItemTagsState extends State<ItemTags> {
     }
 
     // removes items that have been orphaned
-    if (_dataListInherited!.itemCount == widget.index + 1 &&
-        _dataListInherited!.list!.length > _dataListInherited!.itemCount!)
-      _dataListInherited!.list!
-          .removeRange(widget.index + 1, _dataListInherited!.list!.length);
+    if (dataListInherited.itemCount == widget.index + 1 &&
+        list.length > dataListInherited.itemCount)
+      list.removeRange(widget.index + 1, list.length);
 
     //print(_dataListInherited.list.length);
 
     // update Listener
     if (_dataList != null) _dataList!.removeListener(_didValueChange);
 
-    _dataList = _dataListInherited!.list!.elementAt(widget.index);
+    _dataList = list.elementAt(widget.index);
     _dataList!.addListener(_didValueChange);
   }
 
@@ -400,7 +401,7 @@ class _ItemTagsState extends State<ItemTags> {
                       onTap: () {
                         if (widget.removeButton!.onRemoved != null) {
                           if (widget.removeButton!.onRemoved!())
-                            _dataListInherited!.list!.removeAt(widget.index);
+                            _dataListInherited!.list.removeAt(widget.index);
                         }
                       },
                     )))
@@ -436,8 +437,8 @@ class _ItemTagsState extends State<ItemTags> {
 
   /// Single item selection
   void _singleItem(DataListInherited dataSetIn, DataList? dataSet) {
-    dataSetIn.list!
-        .where((tg) => tg != null)
+    dataSetIn.list
+        .whereNotNull()
         .where((tg) => tg.active)
         .where((tg2) => tg2 != dataSet)
         .forEach((tg) => tg.active = false);
@@ -446,10 +447,16 @@ class _ItemTagsState extends State<ItemTags> {
 
 ///callback
 class Item {
-  Item({this.index, this.title, this.active, this.customData});
+  Item({
+    required this.index,
+    required this.title,
+    required this.active,
+    required this.customData,
+  });
+
   final int? index;
   final String? title;
-  final bool? active;
+  final bool active;
   final dynamic customData;
 
   @override

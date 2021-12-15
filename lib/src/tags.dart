@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
 import '../flutter_tags.dart';
@@ -87,9 +88,9 @@ class TagsState extends State<Tags> {
   Orientation _orientation = Orientation.portrait;
   double _width = 0;
 
-  final List<DataList> _list = [];
+  final List<DataList?> _list = [];
 
-  List<Item> get getAllItem => _list.toList();
+  List<Item> get getAllItem => _list.whereNotNull().toList();
 
   //get the current width of the screen
   void _getWidthContext() {
@@ -164,8 +165,10 @@ class TagsState extends State<Tags> {
               tagsTextField: widget.textField!,
               onSubmitted: (String str) {
                 if (!widget.textField!.duplicates) {
-                  final List<DataList> lst =
-                      _list.where((l) => l != null && l.title == str).toList();
+                  final List<DataList> lst = _list
+                      .where((l) => l?.title == str)
+                      .whereNotNull()
+                      .toList();
 
                   if (lst.isNotEmpty) {
                     lst.forEach((d) => d.showDuplicate = true);
@@ -234,15 +237,15 @@ class TagsState extends State<Tags> {
 class DataListInherited extends InheritedWidget {
   DataListInherited(
       {Key? key,
-      this.list,
+      required this.list,
       this.symmetry,
-      this.itemCount,
+      required this.itemCount,
       required Widget child})
       : super(key: key, child: child);
 
-  final List<DataList>? list;
+  final List<DataList?> list;
   final bool? symmetry;
-  final int? itemCount;
+  final int itemCount;
 
   @override
   bool updateShouldNotify(DataListInherited old) {
